@@ -73,7 +73,7 @@ module Hand
     total
   end
 
-  def display_hand
+  def show_hand
     puts "#{name}'s hand: #{calculate_hand}"
     puts hand
   end
@@ -159,9 +159,9 @@ class Game
 
   def display_game_state(dealer, player, conceal_hand=true)
     system 'clear'
-    conceal_hand ? dealer.conceal_hand : dealer.display_hand
+    conceal_hand ? dealer.conceal_hand : dealer.show_hand
     puts
-    player.display_hand
+    player.show_hand
     sleep 0.5
   end
 
