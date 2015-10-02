@@ -74,9 +74,9 @@ def display_hand(person, cards)
 end
 
 def display_game_state(players_name, dealers_cards, players_cards,
-                       conceal_hand=false)
+                       show_hand=false)
   system 'clear'
-  conceal_hand ? conceal_hand(dealers_cards) : display_hand("Dealer", dealers_cards)
+  show_hand ? conceal_hand(dealers_cards) : display_hand("Dealer", dealers_cards)
   puts
   display_hand(players_name, players_cards)
 end
@@ -85,16 +85,16 @@ system 'clear'
 puts "Welcome to Blackjack!"
 players_name = ask_name
 
-begin loop
+begin
   system 'clear'
   deck = shuffle_deck
 
   players_cards = []
   dealers_cards = []
-  players_cards << deck.shift
-  dealers_cards << deck.shift
-  players_cards << deck.shift
-  dealers_cards << deck.shift
+  2.times do
+    players_cards << deck.shift
+    dealers_cards << deck.shift
+  end
 
   display_game_state(players_name, dealers_cards, players_cards, true)
 
