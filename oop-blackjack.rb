@@ -50,7 +50,7 @@ class Card < Deck
 end
 
 module Hand
-  def calculate_hand
+  def total
     total = 0
 
     cards = hand.map { |card| card.value }
@@ -74,16 +74,16 @@ module Hand
   end
 
   def show_hand
-    puts "#{name}'s hand: #{calculate_hand}"
+    puts "#{name}'s hand: #{total}"
     puts hand
   end
 
   def is_bust?
-    calculate_hand > 21
+    total > 21
   end
 
   def is_blackjack?
-    calculate_hand == 21
+    total == 21
   end
 
   def add_card(new_card)
@@ -129,7 +129,7 @@ class Dealer
   end
 
   def must_hit?
-    calculate_hand < 17
+    total < 17
   end
 end
 
@@ -184,7 +184,7 @@ class Game
   end
 
   def dealer_turn
-    while dealer.calculate_hand < 17 do
+    while dealer.total < 17 do
       dealer.add_card(deck.deal_card)
       display_game_state(dealer, player, false)
     end
@@ -205,9 +205,9 @@ class Game
       puts "#{dealer.name} is bust!"
       puts "#{player.name} won!"
     elsif
-      if player.calculate_hand > dealer.calculate_hand
+      if player.total > dealer.total
         puts "#{player.name} won!"
-      elsif player.calculate_hand < dealer.calculate_hand
+      elsif player.total < dealer.total
         puts "#{dealer.name} won!"
       elsif
         puts "#{player.name} and #{dealer.name} tied!"
@@ -222,7 +222,6 @@ class Game
       display_game_state(dealer, player, true)
       player_turn unless winner?
       dealer_turn unless winner?
-      display_game_state(dealer, player, false)
       display_winner
       puts "\n#{player.name}, would you like to play again? [y/n]"
       if gets.chomp != 'y'
