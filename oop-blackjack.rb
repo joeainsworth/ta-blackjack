@@ -86,6 +86,10 @@ module Hand
     calculate_hand == 21
   end
 
+  def add_card(new_card)
+    hand << new_card
+  end
+
   def return_cards(deck)
     1.upto(self.hand.size) do
       deck.cards << self.hand.pop
@@ -138,7 +142,7 @@ class Game
     @dealer = Dealer.new
   end
 
-  def greet_player
+  def get_player_name
     puts "Hello!"
     begin
       puts "What is your name?"
@@ -152,8 +156,8 @@ class Game
 
   def deal_cards
     2.times do
-      player.hand << deck.deal_card
-      dealer.hand << deck.deal_card
+      player.add_card(deck.deal_card)
+      dealer.add_card(deck.deal_card)
     end
   end
 
@@ -169,19 +173,19 @@ class Game
     player.is_bust? || player.is_blackjack? || dealer.is_bust? || dealer.is_blackjack?
   end
 
-  def hit_or_stay
+  def player_turn
     loop do
-      puts "\nWould you like to hit or stay? [h/s]"
-      choice = gets.chomp
-      player.hand << deck.deal_card if choice == "h"
+      puts "\nHit or stay? [h/s]"
+      hit_or_stay = gets.chomp
+      player.add_card(deck.deal_card) if hit_or_stay == "h"
       display_game_state(dealer, player, true)
-      break if winner? || choice == "s"
+      break if winner? || hit_or_stay == "s"
     end
   end
 
   def dealer_turn
     while dealer.calculate_hand < 17 do
-      dealer.hand << deck.deal_card
+      dealer.add_card(deck.deal_card)
       display_game_state(dealer, player, false)
     end
   end
@@ -212,14 +216,15 @@ class Game
   end
 
   def play
-    greet_player
+    get_player_name
     loop do
       deal_cards
       display_game_state(dealer, player, true)
-      hit_or_stay unless winner?
+      player_turn unless winner?
       dealer_turn unless winner?
+      display_game_state(dealer, player, false)
       display_winner
-      puts "\nWould you like to play again? [y/n]"
+      puts "\n#{player.name}, would you like to play again? [y/n]"
       if gets.chomp != 'y'
         break
       else
