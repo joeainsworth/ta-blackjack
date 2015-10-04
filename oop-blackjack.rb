@@ -52,22 +52,18 @@ end
 module Hand
   def total
     total = 0
-
-    cards = hand.map { |card| card.value }
-    cards.each do |card|
-      if card == 'J' ||
-         card == 'Q' ||
-         card == 'K'
-        total += 10
-      elsif card == "A"
+    face_values = hand.map { |card| card.value }
+    face_values.each do |value|
+      if value == "A"
         total += 11
       else
-        total += card.to_i
+        total += (value.to_i == 0 ? 10 : value.to_i )
       end
     end
 
-    hand.select { |card| card.value == "A" }.count.times do
-      total -= 10 if total > 21
+    face_values.select { |value| value == "A" }.count.times do
+      break if total <= 21
+      total -= 10
     end
 
     total
@@ -79,11 +75,11 @@ module Hand
   end
 
   def is_bust?
-    total > 21
+    total > Game::BLACKJACK_VALUE
   end
 
   def is_blackjack?
-    total == 21
+    total == Game::BLACKJACK_VALUE
   end
 
   def add_card(new_card)
@@ -100,8 +96,7 @@ end
 class Player
   include Hand
 
-  attr_accessor :hand
-  attr_reader   :name
+  attr_accessor :hand, :name
 
   def initialize(name)
     @name = name
@@ -129,16 +124,20 @@ class Dealer
   end
 
   def must_hit?
-    total < 17
+    total < Game::DEALER_MIN_VALUE
   end
 end
 
 class Game
+  BLACKJACK_VALUE  = 21
+  DEALER_MIN_VALUE = 17
+
   attr_reader :deck, :dealer, :player
 
   def initialize
     system 'clear'
     @deck   = Deck.new
+    @player = Player.new("Player")
     @dealer = Dealer.new
   end
 
@@ -146,11 +145,11 @@ class Game
     puts "Hello!"
     begin
       puts "What is your name?"
-      name = gets.chomp
-    end until name =~ /[a-zA-Z\s]/
-    @player = Player.new(name)
+      player_name = gets.chomp
+    end until player_name =~ /[a-zA-Z\s]/
+    player.name = player_name
     system 'clear'
-    puts "Hello #{name}, welcome to the game..."
+    puts "Hello #{player.name}, welcome to the game..."
     sleep 1
   end
 
@@ -178,19 +177,20 @@ class Game
       puts "\nHit or stay? [h/s]"
       hit_or_stay = gets.chomp
       player.add_card(deck.deal_card) if hit_or_stay == "h"
-      display_game_state(dealer, player, true)
+      display_game_state(dealer, player)
       break if winner? || hit_or_stay == "s"
     end
   end
 
   def dealer_turn
-    while dealer.total < 17 do
+    while dealer.total < Game::DEALER_MIN_VALUE do
       dealer.add_card(deck.deal_card)
       display_game_state(dealer, player, false)
     end
   end
 
   def display_winner
+    display_game_state(dealer, player, false)
     puts
     if player.is_blackjack?
       puts "#{player.name} got blackjack!"
@@ -215,22 +215,26 @@ class Game
     end
   end
 
+  def play_again?
+    puts "\n#{player.name}, would you like to play again? [y/n]"
+    if gets.chomp.downcase == 'y'
+      player.hand = []
+      dealer.hand = []
+      deck = Deck.new
+    else
+      exit
+    end
+  end
+
   def play
     get_player_name
     loop do
       deal_cards
-      display_game_state(dealer, player, true)
+      display_game_state(dealer, player)
       player_turn unless winner?
       dealer_turn unless winner?
       display_winner
-      puts "\n#{player.name}, would you like to play again? [y/n]"
-      if gets.chomp != 'y'
-        break
-      else
-        player.return_cards(deck)
-        dealer.return_cards(deck)
-        deck.shuffle!
-      end
+      play_again?
     end
   end
 
