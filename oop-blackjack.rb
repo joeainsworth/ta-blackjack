@@ -160,7 +160,7 @@ class Game
     end
   end
 
-  def display_game_state(dealer, player, conceal_hand=true)
+  def display_game_state(conceal_hand=true)
     system 'clear'
     conceal_hand ? dealer.conceal_hand : dealer.show_hand
     puts
@@ -177,7 +177,7 @@ class Game
       puts "\nHit or stay? [h/s]"
       hit_or_stay = gets.chomp
       player.add_card(deck.deal_card) if hit_or_stay == "h"
-      display_game_state(dealer, player)
+      display_game_state
       break if winner? || hit_or_stay == "s"
     end
   end
@@ -185,12 +185,12 @@ class Game
   def dealer_turn
     while dealer.total < Game::DEALER_MIN_VALUE do
       dealer.add_card(deck.deal_card)
-      display_game_state(dealer, player, false)
+      display_game_state(false)
     end
   end
 
   def display_winner
-    display_game_state(dealer, player, false)
+    display_game_state(false)
     puts
     if player.is_blackjack?
       puts "#{player.name} got blackjack!"
@@ -230,7 +230,7 @@ class Game
     get_player_name
     loop do
       deal_cards
-      display_game_state(dealer, player)
+      display_game_state
       player_turn unless winner?
       dealer_turn unless winner?
       display_winner
